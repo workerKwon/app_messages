@@ -20,14 +20,15 @@
         </form>
     </div>
     <script src="https://unpkg.com/vue@2.5.13/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script type="module">
-        import LifecycleLogger from './lifecycle-logger.plugin.js';
-        import MessageList from "./MessageList.js";
-        import './focus.directive.js';
-        import './datetime.filter.js';
+        import LifecycleLogger from '../plugins/lifecycle-logger.plugin.js';
+        import MessageList from "../components/MessageList.js";
+        import '../directives/focus.directive.js';
+        import '../filters/datetime.filter.js';
 
         Vue.use(LifecycleLogger, {beforeMount: false})
-        let vm = new Vue({
+        window.vm = new Vue({
             el: '#app',
             name: 'MessageApp',
             components: {
@@ -40,12 +41,17 @@
             methods: {
                 addMessage (event) {
                     if (!this.newMessage) {return;}
-                    let now = new Date();
-                    this.messages.push({
-                        id: now.getTime(),
-                        text: this.newMessage, createdAt: now
-                    });
-                    this.newMessage = '';
+                    axios.post('api/messages', {text: this.newMessage})
+                    .then((response) => {
+                        this.messages.push(response.data)
+                        this.newMessage = ''
+                    })
+                    // let now = new Date();
+                    // this.messages.push({
+                    //     id: now.getTime(),
+                    //     text: this.newMessage, createdAt: now
+                    // });
+                    // this.newMessage = '';
                 },
                 deleteMessage(message) {
                     this.messages.splice(this.messages.indexOf(message), 1)
@@ -56,6 +62,12 @@
                     return this.messages.length >= 10 || this.newMessage.length > 50;
                 }
             },
+            created() {
+                axios.get('api/messages?_=' + new Date().getTime())
+                .then((response) => {
+                    this.messages = response.data;
+                })
+            }
         });
     </script>
 </body>

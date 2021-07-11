@@ -1,5 +1,7 @@
 package com.example.messagedemo;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -11,13 +13,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-@RequestMapping("/messages")
 public class MessageController {
 
     @Autowired
     private MessageService messageService;
 
-    @PostMapping("/messages")
+    @GetMapping("/api/messages")
+    @ResponseBody
+    public ResponseEntity<List<Message>> getMessages() {
+        List<Message> messages = messageService.getMessages();
+        return ResponseEntity.ok(messages);
+    }
+
+    @PostMapping("/api/messages")
     @ResponseBody
     public ResponseEntity<Message> saveMessage(@RequestBody MessageData data) {
         Message saved = messageService.save(data.getText());
@@ -25,6 +33,11 @@ public class MessageController {
             return ResponseEntity.status(500).build();
         }
         return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping("/messages")
+    public String index() {
+        return "index";
     }
 
     @GetMapping("/welcome")
